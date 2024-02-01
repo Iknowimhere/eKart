@@ -1,4 +1,5 @@
 import User from "../models/User.js"
+import { genToken } from "../utils/genToken.js"
 
 //@desc     Register User
 //@path     /api/v1/users/register
@@ -39,14 +40,17 @@ export const loginUser=async (req,res)=>{
     try {
         const {email,password}=req.body
         const existingUser=await User.findOne({email:email})
-        if(!existingUser){
+        if(!existingUser || (!(await existingUser.verifyPwd(password,existingUser.password)))){
             return res.json({
-                message:"user doesn't exist please register"
+                message:"username and password do not match"
             })
         }
+
+        const token=await genToken(existingUser._id)
         res.status(201).json({
             status:"success",
             message:"user logged in",
+            token,
             existingUser
         })
     } catch (error) {
@@ -55,4 +59,8 @@ export const loginUser=async (req,res)=>{
             message:error.message
         })
     }
+}
+
+export const getProfile=async(req,res)=>{
+    res.send("hello this is profile page")
 }

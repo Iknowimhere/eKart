@@ -3,6 +3,7 @@ dotenv.config()
 import express from 'express'
 import userRouter from '../routes/userRoutes.js'
 import {dbConfig} from '../config/dbConfig.js'
+import productRouter from '../routes/productRoutes.js'
 
 dbConfig()
 
@@ -13,5 +14,6 @@ let app=express();
 app.use(express.json());
 
 app.use("/api/v1/users",userRouter);
+app.use("/api/v1/products",productRouter);
 
 export default app;
