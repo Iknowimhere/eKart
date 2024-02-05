@@ -47,6 +47,32 @@ export const getProducts=async (req,res)=>{
         if(req.query.colors){
             productQuery=productQuery.find({colors:req.query.colors})
         }
+        //based on size
+        if(req.query.sizes){
+            let query;
+            req.query.sizes.includes(",")?query=req.query.sizes.split(","):query=[req.query.sizes]
+            console.log(query);
+            productQuery= productQuery.find({sizes:{$all:query}})
+        }
+
+        //based on price
+        if(req.query.price){
+            let range=req.query.price.split(",")
+            console.log(range);
+            productQuery= productQuery.find({price:{$gte:+range[0],$lte:+range[1]}})
+        }
+        //based on category
+        if(req.query.category){
+            productQuery= productQuery.find({category:req.query.category})
+        }
+          //based on brand
+          if(req.query.brand){
+            productQuery= productQuery.find({brand:req.query.brand})
+        }
+          //based on colors
+        if(req.query.colors){
+            productQuery= productQuery.find({colors:req.query.colors})
+        }
         //getting results by resolving query object
         let products= await productQuery;
         res.status(200).json({
