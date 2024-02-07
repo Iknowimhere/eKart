@@ -1,3 +1,4 @@
+import expressAsyncHandler from "express-async-handler"
 import Product from "../models/Product.js"
 
 
@@ -5,14 +6,11 @@ import Product from "../models/Product.js"
 //@path     /api/v1/products
 //@access   Private/Admin
 
-export const createProduct=async (req,res)=>{
-    try {
+export const createProduct=expressAsyncHandler(async (req,res)=>{
         const {name,description,brand,category,sizes,colors,price,totalQty}=req.body
         const existingProduct=await Product.findOne({name:name})
-        if(existingProduct){
-            return res.json({
-                message:"product exists already",
-            })  
+        if(existingProduct){ 
+            throw new Error('product exists already')
         }
         const product=await Product.create({
             name,description,brand,category,sizes,colors,price,totalQty,user:req.userId
@@ -22,21 +20,14 @@ export const createProduct=async (req,res)=>{
             message:"product created",
             product
         })
-    } catch (error) {
-        res.status(500).json({
-            status:"fail",
-            message:error.message
-        })
-    }
-}
+})
 
 
 //@desc     Get Products
 //@path     /api/v1/products
 //@access   Public
 
-export const getProducts=async (req,res)=>{
-    try {
+export const getProducts=expressAsyncHandler(async (req,res)=>{
         //query object
         let productQuery=Product.find()
         //based on name
@@ -99,70 +90,43 @@ export const getProducts=async (req,res)=>{
             count:products.length,
             pagination,
         })            
-    } catch (error) {
-        res.status(500).json({
-            status:"fail",
-            message:error.message
-        })
-    }
-}
+})
 
 //@desc     Get Product
 //@path     /api/v1/products/:id
 //@access   Public
 
-export const getProduct=async (req,res)=>{
-    try {
+export const getProduct=expressAsyncHandler(async (req,res)=>{
         const product=await Product.findById(req.params.id)
         res.status(200).json({
             status:"success",
             message:"product fetched successfully",
             product
         })
-    } catch (error) {
-        res.status(500).json({
-            status:"fail",
-            message:error.message
-        })
-    }
-}
+})
 
 
 //@desc     Update Product
 //@path     /api/v1/products/:id
 //@access   Private/Admin
 
-export const updateProduct=async (req,res)=>{
-    try {
+export const updateProduct=expressAsyncHandler(async (req,res)=>{
         const updatedProduct=await Product.findByIdAndUpdate(req.params.id,req.body,{new:true,runValidators:true})
         res.status(200).json({
             status:"success",
             message:"product updated successfully",
             updatedProduct
         })
-    } catch (error) {
-        res.status(500).json({
-            status:"fail",
-            message:error.message
-        })
-    }
-}
+})
 
 //@desc     Delete Product
 //@path     /api/v1/products/:id
 //@access   Private/Admin
 
-export const deleteProduct=async (req,res)=>{
-    try {
+export const deleteProduct=expressAsyncHandler(async (req,res)=>{
         await Product.findByIdAndDelete(req.params.id)
         res.status(200).json({
             status:"success",
             message:"product deleted successfully"
         })
-    } catch (error) {
-        res.status(500).json({
-            status:"fail",
-            message:error.message
-        })
-    }
-}
+})
