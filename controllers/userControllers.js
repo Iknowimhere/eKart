@@ -1,5 +1,4 @@
 import User from "../models/User.js"
-// import { asyncErrorHandler } from "../utils/asyncErrorHandler.js"
 import expressAsyncHandler from "express-async-handler"
 import { genToken } from "../utils/genToken.js"
 
@@ -7,7 +6,7 @@ import { genToken } from "../utils/genToken.js"
 //@path     /api/v1/users/register
 //@access   Public
 
-export const registerUser=expressAsyncHandler(async (req,res,next)=>{
+export const registerUser=expressAsyncHandler(async (req,res)=>{
     const {fullName,email,password}=req.body
     const existingUser=await User.findOne({email:email})
     if(existingUser){
