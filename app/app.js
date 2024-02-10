@@ -8,6 +8,7 @@ import { globalErrorHandler } from '../middlewares/globalErrorHandler.js'
 import categoryRouter from '../routes/categoryRoutes.js'
 import brandRouter from '../routes/brandRoutes.js'
 import colorRouter from '../routes/colorRoutes.js'
+import reviewRouter from '../routes/reviewRoutes.js'
 
 dbConfig()
 
@@ -22,6 +23,7 @@ app.use("/api/v1/products",productRouter);
 app.use("/api/v1/categories",categoryRouter);
 app.use("/api/v1/brands",brandRouter);
 app.use("/api/v1/colors",colorRouter);
+app.use("/api/v1/reviews",reviewRouter);
 
 //not found route
 app.all("*",(req,res,next)=>{
