@@ -3,6 +3,7 @@ import Stripe from 'stripe';
 import expressAsyncHandler from 'express-async-handler';
 import Product from '../models/Product.js';
 import User from '../models/User.js';
+import Coupon from '../models/Coupon.js';
 
 //@desc     Create Order
 //@path     /api/v1/orders
@@ -19,6 +20,12 @@ export const createOrder = expressAsyncHandler(async (req, res) => {
   if (!user.hasShippingAddress) {
     throw new Error('Update shipping address please');
   }
+  const coupon=req.query?.coupon
+  const couponExists=await Coupon.findOne({code:coupon})
+  if(!couponExists){
+    throw new Error('Coupon doesnt exist')
+  }
+  
   const newOrder = await Order.create({
     user: req.userId,
     orderItems,
@@ -26,7 +33,8 @@ export const createOrder = expressAsyncHandler(async (req, res) => {
       name: 'umashankar',
       place: 'hoskote',
       pin: 562122,
-    }
+    },
+    totalPrice
   });
 
   //updating product attributes after order
@@ -63,7 +71,7 @@ export const createOrder = expressAsyncHandler(async (req, res) => {
   const session = await stripe.checkout.sessions.create({
     line_items: convertedOrders,
     metadata: {
-      orderID:JSON.stringify(newOrder._id)
+      orderId: JSON.stringify(newOrder._id),
     },
     mode: 'payment',
     success_url: 'http://localhost:3000',
@@ -71,9 +79,45 @@ export const createOrder = expressAsyncHandler(async (req, res) => {
   });
 
   res.send({ url: session.url });
-  // res.status(201).json({
-  //   status: 'success',
-  //   message: 'order successfully done',
-  //   newOrder,
-  // });
+});
+
+//@desc     Get Orders
+//@path     /api/v1/orders
+//@access   Private/User
+export const getOrders = expressAsyncHandler(async (req, res) => {
+  const orders = await Order.find();
+  res.status(201).json({
+    status: 'success',
+    message: 'orders fetched successfully',
+    orders,
+  });
+});
+
+//@desc     Get Order
+//@path     /api/v1/orders/:id
+//@access   Public
+
+export const getOrder = expressAsyncHandler(async (req, res) => {
+  const order = await Order.findById(req.params.id);
+  res.status(200).json({
+    status: 'success',
+    message: 'order fetched successfully',
+    order,
+  });
+});
+
+//@desc     Update Order
+//@path     /api/v1/orders/:id
+//@access   Private/Admin
+
+export const updateOrder = expressAsyncHandler(async (req, res) => {
+  const updatedOrder = await Order.findByIdAndUpdate(req.params.id, req.body, {
+    new: true,
+    runValidators: true,
+  });
+  res.status(200).json({
+    status: 'success',
+    message: 'Order updated successfully',
+    updatedOrder,
+  });
 });
