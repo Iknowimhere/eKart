@@ -10,7 +10,7 @@ import Coupon from '../models/Coupon.js';
 //@access   Private/User
 
 export const createOrder = expressAsyncHandler(async (req, res) => {
-  const { orderItems, totalPrice } = req.body;
+  const { orderItems } = req.body;
   //find the product in order item exists
   const products = await Product.find({ _id: { $in: orderItems } });
   if (products.length < 0) {
@@ -20,12 +20,15 @@ export const createOrder = expressAsyncHandler(async (req, res) => {
   if (!user.hasShippingAddress) {
     throw new Error('Update shipping address please');
   }
-  const coupon=req.query?.coupon
-  const couponExists=await Coupon.findOne({code:coupon})
-  if(!couponExists){
-    throw new Error('Coupon doesnt exist')
+  const coupon = req.query?.coupon;
+  const couponExists = await Coupon.findOne({ code: coupon });
+  if (!couponExists) {
+    throw new Error('Coupon doesnt exist');
   }
-  
+  if (couponExists.isExpired) {
+    throw new Error('Coupon expired');
+  }
+
   const newOrder = await Order.create({
     user: req.userId,
     orderItems,
@@ -34,7 +37,6 @@ export const createOrder = expressAsyncHandler(async (req, res) => {
       place: 'hoskote',
       pin: 562122,
     },
-    totalPrice
   });
 
   //updating product attributes after order
@@ -46,7 +48,6 @@ export const createOrder = expressAsyncHandler(async (req, res) => {
     product.totalQty -= order.qty;
     await product.save();
   });
-
   //push order into the user's orders
   user.orders.push(newOrder._id);
   //re save
@@ -62,7 +63,9 @@ export const createOrder = expressAsyncHandler(async (req, res) => {
           name: item.name,
           description: item.description,
         },
-        unit_amount: item.price * 100,
+        unit_amount: couponExists
+          ? (item.price - (item.price * couponExists.discount) / 100) * 100
+          : item.price * 100,
       },
       quantity: item.qty,
     };

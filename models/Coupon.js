@@ -9,13 +9,12 @@ const couponSchema = new Schema(
     startDate: {
       type: Date,
       required: true,
-      validation:{
-        validate:function(){
-          console.log(this.startDate > Date.now());
-          return this.startDate > Date.now()
-        },
-        message:"Start date should be greater than today"
-      }
+      // validate: {
+      //   validator: function () {
+      //     return this.startDate > Date.now();
+      //   },
+      //   message: 'Start date should be greater than today',
+      // },
     },
     endDate: {
       type: Date,
@@ -34,12 +33,46 @@ const couponSchema = new Schema(
   },
   {
     timestamps: true,
-    toJSON:{virtuals:true}
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
   }
 );
 
+//coupon expiry date
+couponSchema.virtual('isExpired').get(function () {
+  return this.endDate < Date.now();
+});
 
+//days left for coupon expiry
+couponSchema.virtual('daysLeft').get(function () {
+  const daysleft = this.endDate - Date.now();
+  return Math.ceil(daysleft / (1000 * 60 * 60 * 24));
+});
 
-const Coupon=model('Coupon',couponSchema)
+//verifying start date is greater than today
+couponSchema.pre('validate', function (next) {
+  if (this.startDate < Date.now()) {
+    throw new Error('Start date should be greater than today');
+  }
+  next();
+});
+
+//verifying end date is greater than today
+couponSchema.pre('validate', function (next) {
+  if (this.endDate < Date.now()) {
+    throw new Error('End date should be greater than today');
+  }
+  next();
+});
+
+//verifying whether start date is lesser than end date
+couponSchema.pre('validate', function (next) {
+  if (this.startDate > this.endDate) {
+    throw new Error('Start date should be lesser than End date');
+  }
+  next();
+});
+
+const Coupon = model('Coupon', couponSchema);
 
 export default Coupon;
