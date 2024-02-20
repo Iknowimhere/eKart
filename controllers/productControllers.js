@@ -26,7 +26,7 @@ export const createProduct=expressAsyncHandler(async (req,res)=>{
              throw new Error('Brand not found,Please first check Brand name or create Brand')
          }
         const newProduct=await Product.create({
-            name,description,brand,category,sizes,colors,price,totalQty,user:req.userId
+            name,description,brand,category,sizes,colors,price,totalQty,user:req.userId,images:req.files
         }) 
         //push product into category
         categoryFound.products.push(newProduct._id)

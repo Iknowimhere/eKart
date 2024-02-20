@@ -9,12 +9,6 @@ const couponSchema = new Schema(
     startDate: {
       type: Date,
       required: true,
-      // validate: {
-      //   validator: function () {
-      //     return this.startDate > Date.now();
-      //   },
-      //   message: 'Start date should be greater than today',
-      // },
     },
     endDate: {
       type: Date,
@@ -45,8 +39,8 @@ couponSchema.virtual('isExpired').get(function () {
 
 //days left for coupon expiry
 couponSchema.virtual('daysLeft').get(function () {
-  const daysleft = this.endDate - Date.now();
-  return Math.ceil(daysleft / (1000 * 60 * 60 * 24));
+  const daysLeft = this.endDate - Date.now();
+  return Math.ceil(daysLeft / (1000 * 60 * 60 * 24));
 });
 
 //verifying start date is greater than today

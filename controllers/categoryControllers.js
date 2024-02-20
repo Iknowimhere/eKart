@@ -12,6 +12,7 @@ export const createCategory=expressAsyncHandler(async (req,res)=>{
     }
     const product=await Category.create({
         name,
+        image:req.file.path,
         user:req.userId
     }) 
     res.status(201).json({

@@ -6,6 +6,7 @@ import {
   getOrders,
   updateOrder,
 } from '../controllers/orderControllers.js';
+import isAdmin from '../middlewares/isAdmin.js';
 
 //router instance
 const orderRouter = express.Router();
@@ -13,6 +14,6 @@ const orderRouter = express.Router();
 orderRouter.post('/', isLogged, createOrder);
 orderRouter.get('/', getOrders);
 orderRouter.get('/:id', getOrder);
-orderRouter.put('/:id', isLogged, updateOrder);
+orderRouter.put('/:id', isLogged, isAdmin,updateOrder);
 
 export default orderRouter;
