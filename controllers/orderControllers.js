@@ -124,3 +124,40 @@ export const updateOrder = expressAsyncHandler(async (req, res) => {
     updatedOrder,
   });
 });
+
+//@desc     Get Order Stats
+//@path     /api/v1/orders/stats
+//@access   Private/Admin
+export const getOrderStats = expressAsyncHandler(async (req, res) => {
+  const orderStats = await Order.aggregate([
+    {
+      $group: {
+        _id: null,
+        minOrderPrice: { $min: '$totalPrice' },
+        maXOrderPrice: { $max: '$totalPrice' },
+        avgOrderPrice: { $avg: '$totalPrice' },
+        totalOrders: { $sum: 1 },
+      },
+    },
+  ]);
+
+  //order info about today
+  const todaySales = await Order.aggregate([
+    {
+      $match: {
+        createdAt: {
+          $gte: new Date(new Date().setHours(0, 0, 0, 0)),
+          $lte: new Date(new Date().setHours(23, 59, 59, 999)),
+        },
+      },
+    },
+    { $group: { _id: null, totalOrderPrice: { $sum: '$totalPrice' } } },
+  ]);
+
+  res.status(200).json({
+    status: 'success',
+    message: 'fetched stats',
+    orderStats,
+    todaySales,
+  });
+});
